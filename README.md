@@ -1,2 +1,2 @@
 # sleeper_mcp
-MCP fopr sleeper fantasy app
+MCP for sleeper fantasy app
