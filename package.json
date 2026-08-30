@@ -1,0 +1,24 @@
+{
+  "name": "sleeper-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP server for the Sleeper fantasy API, locked to a configured user and leagues",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node scripts/launch.js",
+    "test": "tsc -p tsconfig.json && node --test dist/config.test.js dist/identity.test.js dist/tools/helpers.test.js dist/sleeper/shape.test.js dist/sleeper/players.test.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "dotenv": "^16.6.1",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  }
+}
