@@ -1,5 +1,5 @@
 ---
-name: sleeper-api
+name: document-new-sleeper-api
 description: Documents Sleeper public API IDs, v1 endpoints, rate limits, and the daily player cache used by sleeper_mcp. Use when calling Sleeper, mapping player/roster/league IDs, or adding API coverage.
 ---
 
@@ -20,15 +20,18 @@ Read-only public API. No token. Do not add write actions.
 | `roster_id` | Team slot inside a league (number). |
 | `player_id` | Player or team defense (`"4034"`, `"DET"`). Resolve via the cache. |
 | `matchup_id` | Pairs two roster rows in a week. |
-| `draft_id` | Draft. Not in v1 tools. |
+| `draft_id` | Draft. Must belong to an allowlisted league. Defaults to the league's current draft. |
 
 ## v1 endpoints used
 
 - `GET /user/{user_id}`
 - `GET /user/{user_id}/leagues/nfl/{season}`
+- `GET /league/{league_id}`
 - `GET /league/{league_id}/rosters`
 - `GET /league/{league_id}/users`
 - `GET /league/{league_id}/matchups/{week}`
+- `GET /draft/{draft_id}`
+- `GET /draft/{draft_id}/picks`
 - `GET /state/nfl`
 - `GET /players/nfl` — cache daily in `.cache/players-nfl.json`; never return the raw map
 

@@ -6,6 +6,7 @@ import type { AppContext } from './context.js';
 import { validateIdentity } from './identity.js';
 import { SleeperClient } from './sleeper/client.js';
 import { PlayerCache } from './sleeper/players.js';
+import { registerDraftPicksTool, registerDraftTool } from './tools/drafts.js';
 import { registerLeaguesTool } from './tools/leagues.js';
 import { registerMatchupsTool } from './tools/matchups.js';
 import { registerNflStateTool } from './tools/nfl-state.js';
@@ -18,6 +19,8 @@ export function createServer(ctx: AppContext): McpServer {
   registerLeaguesTool(server, ctx);
   registerRostersTool(server, ctx);
   registerMatchupsTool(server, ctx);
+  registerDraftTool(server, ctx);
+  registerDraftPicksTool(server, ctx);
   registerNflStateTool(server, ctx);
   return server;
 }

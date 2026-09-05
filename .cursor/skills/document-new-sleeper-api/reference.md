@@ -19,11 +19,13 @@ Official docs: https://docs.sleeper.com/#user
 - Team defenses use the team abbreviation as `player_id`.
 - Matchup rows are per roster. Pair rows that share `matchup_id`. A null `matchup_id` is a bye.
 - League `settings` and `scoring_settings` are large; do not return them from v1 tools.
+- Draft `settings` are compact slot/round/timer fields only. Resolve `draft_order` user IDs to display names.
+- Draft picks resolve `player_id` via the cache and `picked_by` to owner names. When `picked_by` is empty (common on keepers), fall back to the roster owner. Empty picks lists are valid before the draft starts.
 - `/players/nfl` is ~5MB. Refresh at most once per UTC day.
 
 ## Deferred endpoints (not v1)
 
-- Drafts: `/user/{id}/drafts/...`, `/draft/{id}`, `/draft/{id}/picks`
+- Drafts: `/user/{id}/drafts/...`, `/league/{id}/drafts`
 - Transactions: `/league/{id}/transactions/{round}`
 - Traded picks: `/league/{id}/traded_picks`
 - Playoff brackets: `/league/{id}/winners_bracket`, `/losers_bracket`

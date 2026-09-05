@@ -1,5 +1,7 @@
 import { SleeperApiError } from './errors.js';
 import type {
+  SleeperDraft,
+  SleeperDraftPick,
   SleeperLeague,
   SleeperLeagueUser,
   SleeperMatchup,
@@ -67,6 +69,14 @@ export class SleeperClient {
 
   async getNflState(): Promise<SleeperNflState> {
     return this.get<SleeperNflState>('/state/nfl');
+  }
+
+  async getDraft(draftId: string): Promise<SleeperDraft> {
+    return this.get<SleeperDraft>(`/draft/${encodeURIComponent(draftId)}`);
+  }
+
+  async getDraftPicks(draftId: string): Promise<SleeperDraftPick[]> {
+    return this.get<SleeperDraftPick[]>(`/draft/${encodeURIComponent(draftId)}/picks`);
   }
 
   async getPlayers(): Promise<Record<string, SleeperPlayerRaw>> {

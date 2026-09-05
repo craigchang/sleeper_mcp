@@ -12,6 +12,58 @@ export type SleeperLeague = {
   season: string;
   sport: string;
   total_rosters: number;
+  draft_id?: string | null;
+};
+
+export type SleeperDraftSettings = {
+  teams?: number;
+  rounds?: number;
+  pick_timer?: number;
+  slots_qb?: number;
+  slots_rb?: number;
+  slots_wr?: number;
+  slots_te?: number;
+  slots_flex?: number;
+  slots_super_flex?: number;
+  slots_k?: number;
+  slots_def?: number;
+  slots_bn?: number;
+};
+
+export type SleeperDraft = {
+  draft_id: string;
+  league_id: string | null;
+  type: string;
+  status: string;
+  sport: string;
+  season: string;
+  season_type: string;
+  start_time?: number | null;
+  settings?: SleeperDraftSettings;
+  metadata?: {
+    name?: string;
+    scoring_type?: string;
+    description?: string;
+  };
+  draft_order?: Record<string, number> | null;
+  slot_to_roster_id?: Record<string, number> | null;
+};
+
+export type SleeperDraftPick = {
+  draft_id: string;
+  player_id: string | null;
+  picked_by?: string | null;
+  roster_id?: number | string | null;
+  round: number;
+  draft_slot: number;
+  pick_no: number;
+  is_keeper?: boolean | null;
+  metadata?: {
+    first_name?: string;
+    last_name?: string;
+    team?: string;
+    position?: string;
+  };
 };
 
 export type SleeperRosterSettings = {

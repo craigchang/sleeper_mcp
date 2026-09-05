@@ -1,5 +1,8 @@
 import type {
   PlayerInfo,
+  SleeperDraft,
+  SleeperDraftPick,
+  SleeperDraftSettings,
   SleeperLeague,
   SleeperLeagueUser,
   SleeperMatchup,
@@ -165,6 +168,173 @@ export function pairMatchups(
     .map(([matchup_id, teams]) => ({ matchup_id, teams }));
 
   return { matchups: shaped, byes };
+}
+
+export type ShapedDraftSlot = {
+  slot: number;
+  roster_id: number | null;
+  owner: OwnerSummary;
+};
+
+export type ShapedDraft = {
+  draft_id: string;
+  league_id: string | null;
+  name: string | null;
+  type: string;
+  status: string;
+  season: string;
+  season_type: string;
+  scoring_type: string | null;
+  start_time: number | null;
+  settings: SleeperDraftSettings;
+  draft_order: ShapedDraftSlot[];
+};
+
+const DRAFT_SETTING_KEYS = [
+  'teams',
+  'rounds',
+  'pick_timer',
+  'slots_qb',
+  'slots_rb',
+  'slots_wr',
+  'slots_te',
+  'slots_flex',
+  'slots_super_flex',
+  'slots_k',
+  'slots_def',
+  'slots_bn',
+] as const;
+
+function compactDraftSettings(settings?: SleeperDraftSettings): SleeperDraftSettings {
+  const compact: SleeperDraftSettings = {};
+  for (const key of DRAFT_SETTING_KEYS) {
+    const value = settings?.[key];
+    if (typeof value === 'number') {
+      compact[key] = value;
+    }
+  }
+  return compact;
+}
+
+export function shapeDraft(draft: SleeperDraft, users: SleeperLeagueUser[]): ShapedDraft {
+  const slotToRoster = draft.slot_to_roster_id ?? {};
+  const draft_order = Object.entries(draft.draft_order ?? {})
+    .map(([userId, slot]) => ({
+      slot,
+      roster_id: slotToRoster[String(slot)] ?? null,
+      owner: ownerFromUsers(userId, users),
+    }))
+    .sort((a, b) => a.slot - b.slot);
+
+  return {
+    draft_id: draft.draft_id,
+    league_id: draft.league_id,
+    name: draft.metadata?.name ?? null,
+    type: draft.type,
+    status: draft.status,
+    season: draft.season,
+    season_type: draft.season_type,
+    scoring_type: draft.metadata?.scoring_type ?? null,
+    start_time: draft.start_time ?? null,
+    settings: compactDraftSettings(draft.settings),
+    draft_order,
+  };
+}
+
+export type ShapedDraftPick = {
+  pick_no: number;
+  round: number;
+  draft_slot: number;
+  roster_id: number | null;
+  is_keeper: boolean;
+  player: PlayerInfo;
+  owner: OwnerSummary;
+};
+
+function rosterIdFromPick(value: SleeperDraftPick['roster_id']): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function playerFromPick(
+  pick: SleeperDraftPick,
+  resolve: (id: string) => PlayerInfo,
+): PlayerInfo | null {
+  if (!isFilledPlayerId(pick.player_id)) {
+    return null;
+  }
+  const resolved = resolve(pick.player_id);
+  if (resolved.name !== pick.player_id) {
+    return resolved;
+  }
+  const name = [pick.metadata?.first_name, pick.metadata?.last_name].filter(Boolean).join(' ');
+  if (!name && !pick.metadata?.position && !pick.metadata?.team) {
+    return resolved;
+  }
+  return {
+    player_id: pick.player_id,
+    name: name || resolved.name,
+    position: pick.metadata?.position ?? resolved.position,
+    team: pick.metadata?.team ?? resolved.team,
+  };
+}
+
+function ownerFromPick(
+  pick: SleeperDraftPick,
+  users: SleeperLeagueUser[],
+  ownerByRoster: Map<number, OwnerSummary>,
+): OwnerSummary {
+  if (pick.picked_by) {
+    return ownerFromUsers(pick.picked_by, users);
+  }
+  const rosterId = rosterIdFromPick(pick.roster_id);
+  if (rosterId != null) {
+    return (
+      ownerByRoster.get(rosterId) ?? {
+        user_id: null,
+        display_name: null,
+        team_name: null,
+      }
+    );
+  }
+  return ownerFromUsers(null, users);
+}
+
+export function shapeDraftPicks(
+  picks: SleeperDraftPick[],
+  rosters: SleeperRoster[],
+  users: SleeperLeagueUser[],
+  resolve: (id: string) => PlayerInfo,
+): ShapedDraftPick[] {
+  const ownerByRoster = new Map<number, OwnerSummary>();
+  for (const roster of rosters) {
+    ownerByRoster.set(roster.roster_id, ownerFromUsers(roster.owner_id, users));
+  }
+
+  return picks
+    .map((pick) => {
+      const player = playerFromPick(pick, resolve);
+      if (!player) {
+        return null;
+      }
+      return {
+        pick_no: pick.pick_no,
+        round: pick.round,
+        draft_slot: pick.draft_slot,
+        roster_id: rosterIdFromPick(pick.roster_id),
+        is_keeper: pick.is_keeper === true,
+        player,
+        owner: ownerFromPick(pick, users, ownerByRoster),
+      };
+    })
+    .filter((pick): pick is ShapedDraftPick => pick !== null)
+    .sort((a, b) => a.pick_no - b.pick_no);
 }
 
 export function shapeNflState(state: SleeperNflState): {

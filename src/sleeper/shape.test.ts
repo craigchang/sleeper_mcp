@@ -1,8 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { pairMatchups, shapeLeagues, shapeRosters } from './shape.js';
-import type { PlayerInfo, SleeperLeagueUser, SleeperMatchup, SleeperRoster } from './types.js';
+import { pairMatchups, shapeDraft, shapeDraftPicks, shapeLeagues, shapeRosters } from './shape.js';
+import type {
+  PlayerInfo,
+  SleeperDraft,
+  SleeperDraftPick,
+  SleeperLeagueUser,
+  SleeperMatchup,
+  SleeperRoster,
+} from './types.js';
 
 const users: SleeperLeagueUser[] = [
   {
@@ -132,6 +139,118 @@ test('pairMatchups groups teams that share a matchup_id', () => {
   assert.equal(matchups[0]?.teams[0]?.starters[0]?.name, 'Justin Jefferson');
   assert.equal(byes.length, 1);
   assert.equal(byes[0]?.roster_id, 3);
+});
+
+test('shapeDraft resolves draft-order names and sorts by slot', () => {
+  const draft: SleeperDraft = {
+    draft_id: 'D1',
+    league_id: 'L',
+    type: 'snake',
+    status: 'pre_draft',
+    sport: 'nfl',
+    season: '2026',
+    season_type: 'regular',
+    start_time: 1788473700000,
+    settings: { teams: 2, rounds: 17, pick_timer: 60, slots_qb: 1, slots_bn: 9 },
+    metadata: { name: 'Workday Best Ball', scoring_type: 'ppr' },
+    draft_order: { u2: 1, u1: 2 },
+    slot_to_roster_id: { '1': 10, '2': 3 },
+  };
+
+  const shaped = shapeDraft(draft, users);
+  assert.equal(shaped.name, 'Workday Best Ball');
+  assert.equal(shaped.scoring_type, 'ppr');
+  assert.deepEqual(shaped.settings, { teams: 2, rounds: 17, pick_timer: 60, slots_qb: 1, slots_bn: 9 });
+  assert.deepEqual(shaped.draft_order, [
+    { slot: 1, roster_id: 10, owner: { user_id: 'u2', display_name: 'Bob', team_name: null } },
+    { slot: 2, roster_id: 3, owner: { user_id: 'u1', display_name: 'Alice', team_name: 'Aces' } },
+  ]);
+});
+
+test('shapeDraft treats a missing draft_order as empty', () => {
+  const shaped = shapeDraft(
+    {
+      draft_id: 'D1',
+      league_id: 'L',
+      type: 'linear',
+      status: 'pre_draft',
+      sport: 'nfl',
+      season: '2026',
+      season_type: 'regular',
+    },
+    users,
+  );
+  assert.deepEqual(shaped.draft_order, []);
+  assert.equal(shaped.name, null);
+  assert.deepEqual(shaped.settings, {});
+});
+
+test('shapeDraftPicks resolves player and owner names and sorts by pick_no', () => {
+  const picks: SleeperDraftPick[] = [
+    {
+      draft_id: 'D1',
+      player_id: '4034',
+      picked_by: 'u1',
+      roster_id: '1',
+      round: 1,
+      draft_slot: 2,
+      pick_no: 2,
+      is_keeper: null,
+    },
+    {
+      draft_id: 'D1',
+      player_id: '2391',
+      picked_by: '',
+      roster_id: 10,
+      round: 1,
+      draft_slot: 1,
+      pick_no: 1,
+      is_keeper: true,
+      metadata: { first_name: 'David', last_name: 'Johnson', position: 'RB', team: 'ARI' },
+    },
+    {
+      draft_id: 'D1',
+      player_id: '0',
+      picked_by: 'u2',
+      roster_id: 2,
+      round: 1,
+      draft_slot: 3,
+      pick_no: 3,
+    },
+  ];
+  const rosters: SleeperRoster[] = [
+    {
+      roster_id: 10,
+      owner_id: 'u2',
+      league_id: 'L',
+      starters: [],
+      players: [],
+      reserve: [],
+      settings: {},
+    },
+  ];
+
+  const shaped = shapeDraftPicks(picks, rosters, users, resolve);
+  assert.deepEqual(shaped, [
+    {
+      pick_no: 1,
+      round: 1,
+      draft_slot: 1,
+      roster_id: 10,
+      is_keeper: true,
+      player: { player_id: '2391', name: 'David Johnson', position: 'RB', team: 'ARI' },
+      owner: { user_id: 'u2', display_name: 'Bob', team_name: null },
+    },
+    {
+      pick_no: 2,
+      round: 1,
+      draft_slot: 2,
+      roster_id: 1,
+      is_keeper: false,
+      player: jefferson,
+      owner: { user_id: 'u1', display_name: 'Alice', team_name: 'Aces' },
+    },
+  ]);
 });
 
 test('shapeLeagues keeps only allowlisted leagues', () => {

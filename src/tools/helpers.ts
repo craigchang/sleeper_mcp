@@ -27,6 +27,43 @@ export function resolveLeagueId(config: Identity, leagueId?: string): string {
   return leagueId;
 }
 
+export function assertDraftInLeague(
+  draft: { draft_id: string; league_id: string | null },
+  leagueId: string,
+): void {
+  if (draft.league_id !== leagueId) {
+    throw new LeagueLockError(
+      `draft_id ${draft.draft_id} does not belong to league ${leagueId}.`,
+    );
+  }
+}
+
+export async function resolveDraftId(
+  client: { getLeague(leagueId: string): Promise<{ draft_id?: string | null }> },
+  leagueId: string,
+  draftId?: string,
+): Promise<string> {
+  if (draftId) {
+    return draftId;
+  }
+  const league = await client.getLeague(leagueId);
+  const resolved = league.draft_id ?? undefined;
+  if (!resolved) {
+    throw new SleeperApiError(`League ${leagueId} has no draft.`, 404);
+  }
+  return resolved;
+}
+
+export function draftIdField() {
+  return z
+    .string()
+    .regex(/^\d+$/)
+    .optional()
+    .describe(
+      "Optional. Defaults to the league's current draft_id. Must belong to the selected league.",
+    );
+}
+
 export function leagueIdField(leagueIds: string[]) {
   if (leagueIds.length === 1) {
     return z

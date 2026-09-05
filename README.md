@@ -57,6 +57,8 @@ Enable the server in Cursor MCP settings. Keep real IDs out of any committed fil
 | `get_user_leagues` | Allowlisted leagues only |
 | `get_rosters` | Rosters with owner and player names |
 | `get_matchups` | Week matchups paired by `matchup_id` (week defaults to NFL state) |
+| `get_draft` | Specific draft (order, settings, status). `draft_id` defaults to the league's current draft |
+| `get_draft_picks` | Draft picks with player and owner names. `draft_id` defaults to the league's current draft |
 | `get_nfl_state` | Current week / season |
 
 If exactly one league is configured, `league_id` is optional on league-scoped tools.
