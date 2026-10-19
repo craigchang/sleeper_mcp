@@ -1,23 +1,0 @@
-Script started on Mon Oct 19 11:45:54 2026
-[1m[7m%[27m[1m[0m                                                                                                                                           [0m[27m[24m[Jcraigchang@MacBook-Pro sleeper_mcp % [K[?2004hnpx   ccd 
-[JREADME.md            node_modules/        package.json         src/                 tsconfig.json        
-dist/                package-lock.json    scripts/             tsconfig.build.json  typescript           [A[A[0m[27m[24m[37Ccd[K[1Cscripts[1m/[0m[0m [?2004l
-[J[1m[7m%[27m[1m[0m                                                                                                                                           [0m[27m[24m[Jcraigchang@MacBook-Pro scripts % [K[?2004hlls[?2004l
-launch.js
-[1m[7m%[27m[1m[0m                                                                                                                                           [0m[27m[24m[Jcraigchang@MacBook-Pro scripts % [K[?2004hppwd launch.js[1m [0m[0m [?2004l
-pwd: too many arguments
-[1m[7m%[27m[1m[0m                                                                                                                                           [0m[27m[24m[Jcraigchang@MacBook-Pro scripts % [K[?2004hppwn d[?2004l
-/Users/craigchang/Documents/projects/sleeper_mcp/scripts
-[1m[7m%[27m[1m[0m                                                                                                                                           [0m[27m[24m[Jcraigchang@MacBook-Pro scripts % [K[?2004hccommand node[?2004l
-Welcome to Node.js v22.21.0.
-Type ".help" for more information.
-[1G[0J> [3G
-(To exit, press Ctrl+C again or Ctrl+D or type .exit)
-[1G[0J> [3Gex[90mport[39m[5G[0Kit
-Uncaught ReferenceError: exit is not defined
-[1G[0J> [3Ge[1G[0J> [3G
-(To exit, press Ctrl+C again or Ctrl+D or type .exit)
-[1G[0J> [3G
-[1m[7m%[27m[1m[0m                                                                                                                                           [0m[27m[24m[Jcraigchang@MacBook-Pro scripts % [K[?2004hccommand -v node[?2004l
-/usr/local/bin/node
-[1m[7m%[27m[1m[0m                                                                                                                                           [0m[27m[24m[Jcraigchang@MacBook-Pro scripts % [K[?2004h
