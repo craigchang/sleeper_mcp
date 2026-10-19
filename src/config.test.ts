@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { parseConfig } from './config.js';
+import { applyIdentityEnv, identityEnvFromMcpConfig, parseConfig } from './config.js';
 
 test('parseConfig requires user id', () => {
   assert.throws(
@@ -37,6 +37,45 @@ test('parseConfig treats blank season as unset', () => {
     SLEEPER_SEASON: '  ',
   });
   assert.equal(config.season, undefined);
+});
+
+test('identityEnvFromMcpConfig reads the sleeper env block', () => {
+  assert.deepEqual(
+    identityEnvFromMcpConfig({
+      mcpServers: {
+        sleeper: {
+          env: {
+            SLEEPER_USER_ID: ' 42 ',
+            SLEEPER_LEAGUE_IDS: '1,2',
+            SLEEPER_SEASON: '2026',
+            OTHER: 'ignore',
+          },
+        },
+      },
+    }),
+    {
+      SLEEPER_USER_ID: '42',
+      SLEEPER_LEAGUE_IDS: '1,2',
+      SLEEPER_SEASON: '2026',
+    },
+  );
+});
+
+test('identityEnvFromMcpConfig ignores a missing env block', () => {
+  assert.deepEqual(identityEnvFromMcpConfig({ mcpServers: { sleeper: {} } }), {});
+  assert.deepEqual(identityEnvFromMcpConfig({}), {});
+});
+
+test('applyIdentityEnv fills blanks and leaves existing values', () => {
+  const env: NodeJS.ProcessEnv = { SLEEPER_USER_ID: 'from-process' };
+  applyIdentityEnv(env, {
+    SLEEPER_USER_ID: 'from-mcp',
+    SLEEPER_LEAGUE_IDS: '9',
+    SLEEPER_SEASON: '2026',
+  });
+  assert.equal(env.SLEEPER_USER_ID, 'from-process');
+  assert.equal(env.SLEEPER_LEAGUE_IDS, '9');
+  assert.equal(env.SLEEPER_SEASON, '2026');
 });
 
 test('parseConfig rejects non-numeric ids and seasons', () => {

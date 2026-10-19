@@ -9,7 +9,7 @@ Read-only public API. No token. Do not add write actions.
 
 - Base: `https://api.sleeper.app/v1`
 - Stay under 1000 requests/minute (this client caps at 100/min)
-- Identity is locked: `SLEEPER_USER_ID` + `SLEEPER_LEAGUE_IDS` from gitignored `.env`
+- Identity is locked: `SLEEPER_USER_ID`, `SLEEPER_LEAGUE_IDS`, and optional `SLEEPER_SEASON` from `.cursor/mcp.json` `env`, or from gitignored `.env` when those variables are unset
 
 ## IDs (do not mix)
 
